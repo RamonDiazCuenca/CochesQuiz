@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">CochesQuiz</string>
+    <string name="pregunta">¿De qué marca es este logo?</string>
+</resources>

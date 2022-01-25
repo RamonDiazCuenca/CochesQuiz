@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coches>
+    <coche>
+        <nombre>BMW</nombre>
+        <foto>logo_bmw.png</foto>
+    </coche>
+    <coche>
+        <nombre>Audi</nombre>
+        <foto>logo_audi.png</foto>
+    </coche>
+    <coche>
+        <nombre>Mercedes</nombre>
+        <foto>logo_mercedes.png</foto>
+    </coche>
+    <coche>
+        <nombre>Volkswagen</nombre>
+        <foto>logo_volkswagen.png</foto>
+    </coche>
+    <coche>
+        <nombre>Ferrari</nombre>
+        <foto>logo_ferrari.png</foto>
+    </coche>
+    <coche>
+        <nombre>Seat</nombre>
+        <foto>logo_seat.png</foto>
+    </coche>
+</coches>
