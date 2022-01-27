@@ -2,26 +2,26 @@
 <coches>
     <coche>
         <nombre>BMW</nombre>
-        <foto>logo_bmw.png</foto>
+        <foto>logo_bmw</foto>
     </coche>
     <coche>
         <nombre>Audi</nombre>
-        <foto>logo_audi.png</foto>
+        <foto>logo_audi</foto>
     </coche>
     <coche>
         <nombre>Mercedes</nombre>
-        <foto>logo_mercedes.png</foto>
+        <foto>logo_mercedes</foto>
     </coche>
     <coche>
         <nombre>Volkswagen</nombre>
-        <foto>logo_volkswagen.png</foto>
+        <foto>logo_volkswagen</foto>
     </coche>
     <coche>
         <nombre>Ferrari</nombre>
-        <foto>logo_ferrari.png</foto>
+        <foto>logo_ferrari</foto>
     </coche>
     <coche>
         <nombre>Seat</nombre>
-        <foto>logo_seat.png</foto>
+        <foto>logo_seat</foto>
     </coche>
 </coches>

@@ -1,5 +1,6 @@
 package es.android.coches;
 
+import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
@@ -13,13 +14,17 @@ import android.widget.RadioButton;
 import es.android.coches.databinding.FragmentConocimientosBinding;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -38,6 +43,11 @@ public class ConocimientosFragment extends Fragment {
 
     List<Pregunta> preguntas;
     int respuestaCorrecta;
+
+
+    int contadorRespOK = 0;
+    int contadorRespOKTotal = 0;
+    JSONObject obj;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,7 +72,21 @@ public class ConocimientosFragment extends Fragment {
 
         binding.botonRespuesta.setOnClickListener(v -> {
             int seleccionado = binding.radioGroup.getCheckedRadioButtonId();
-            CharSequence mensaje = seleccionado == respuestaCorrecta ? "¡Acertaste!" : "Fallaste";
+            //CharSequence mensaje = seleccionado == respuestaCorrecta ? "¡Acertaste!" : "Fallaste";
+
+            CharSequence mensaje;
+           if(seleccionado==respuestaCorrecta){
+
+               mensaje = "¡Acertaste!";
+               contadorRespOK++;
+
+               if(contadorRespOKTotal<contadorRespOK)
+                   contadorRespOKTotal=contadorRespOK;
+
+           }else{
+               mensaje = "Fallaste";
+           }
+
             Snackbar.make(v, mensaje, Snackbar.LENGTH_INDEFINITE)
                     .setAction("Siguiente", v1 -> presentarPregunta())
                     .show();
@@ -99,9 +123,14 @@ public class ConocimientosFragment extends Fragment {
 
             InputStream bandera = null;
             try {
-                bandera = getContext().getAssets().open(preguntaActual.foto);
+                //bandera = getContext().getAssets().open(preguntaActual.foto);
+
+                // IMPLEMENTED
+                int idLogo = getResources().getIdentifier(preguntaActual.foto,"raw",getContext().getPackageName());
+                bandera = getContext().getResources().openRawResource(idLogo);
+
                 binding.bandera.setImageBitmap(BitmapFactory.decodeStream(bandera));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -109,16 +138,44 @@ public class ConocimientosFragment extends Fragment {
             for (int i = 0; i < binding.radioGroup.getChildCount(); i++) {
                 RadioButton radio = (RadioButton) binding.radioGroup.getChildAt(i);
                 CharSequence respuesta = preguntaActual.getRespuetas().get(i);
+
                 if (respuesta.equals(preguntaActual.respuestaCorrecta))
                     respuestaCorrecta = radio.getId();
 
                 radio.setText(respuesta);
             }
         } else {
-            binding.bandera.setVisibility(View.GONE);
-            binding.radioGroup.setVisibility(View.GONE);
-            binding.botonRespuesta.setVisibility(View.GONE);
-            binding.textView.setText("¡Fin!");
+
+            try {
+                obj.put("puntuacion_maxima",contadorRespOKTotal);
+                obj.put("ultima_puntuacion", contadorRespOK);
+                binding.bandera.setVisibility(View.GONE);
+                binding.radioGroup.setVisibility(View.GONE);
+                binding.botonRespuesta.setVisibility(View.GONE);
+                binding.textView.setText("¡Fin! \n Acertaste: " + obj.getInt("ultima_puntuacion") + " \n Tu puntuación máxima es: " + obj.getInt("puntuacion_maxima"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void almacenarPuntuacion(int puntuacionActual, int puntuacionMaxima){
+
+
+    }
+
+    private void utilizarFichero(){
+
+        String fichero = "JsonPuntuacion.json", textoAlmacenar = obj.toString();
+        FileOutputStream fos;
+
+        try {
+            fos = openFileOutput(fichero, Context.MODE_PRIVATE);
+            fos.write(textoAlmacenar.getBytes());
+            fos.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -148,7 +205,12 @@ public class ConocimientosFragment extends Fragment {
         DocumentBuilderFactory factory =
                 DocumentBuilderFactory.newInstance();
         DocumentBuilder constructor = factory.newDocumentBuilder();
-        Document doc = constructor.parse(getContext().getAssets().open(fichero));
+        //Document doc = constructor.parse(getContext().getAssets().open(fichero));
+
+        //IMPLEMENTED
+        int idRecurso = getResources().getIdentifier("coches", "raw", getContext().getPackageName());
+        Document doc = constructor.parse(getContext().getResources().openRawResource(idRecurso));
+
         doc.getDocumentElement().normalize();
         return doc;
     }
