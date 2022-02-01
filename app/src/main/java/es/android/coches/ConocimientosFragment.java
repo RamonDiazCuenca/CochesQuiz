@@ -21,6 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +48,7 @@ public class ConocimientosFragment extends Fragment {
 
     int contadorRespOK = 0;
     int contadorRespOKTotal = 0;
-    JSONObject obj;
+    JSONObject obj = new JSONObject();;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,6 +62,51 @@ public class ConocimientosFragment extends Fragment {
         }
         Collections.shuffle(todasLasPreguntas);
         preguntas = new ArrayList<>(todasLasPreguntas);
+
+
+        if(!fileExists(getContext(), "JsonPuntuacion.json")){
+
+
+
+            //  CREAMOS EL FICHERO
+            try {
+
+                obj.put("puntuacion_maxima",contadorRespOKTotal);
+                obj.put("ultima_puntuacion",contadorRespOK);
+                String jsonString = obj.toString();
+
+                salvarFichero("JsonPuntuacion.json",jsonString);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    // GUARDAMOS EL FICHERO
+    private void salvarFichero(String fichero, String texto) {
+
+        FileOutputStream fos;
+
+        try {
+
+            fos = getContext().openFileOutput(fichero, Context.MODE_PRIVATE);
+            fos.write(texto.getBytes());
+            fos.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // COMPROBAMOS SI EL FICHERO EXISTE
+    public boolean fileExists(Context context, String filename) {
+        File file = context.getFileStreamPath(filename);
+        if (file == null || !file.exists()) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -80,6 +126,7 @@ public class ConocimientosFragment extends Fragment {
                mensaje = "¡Acertaste!";
                contadorRespOK++;
 
+               // IMPLEMENTAR EL METODO LEER FICHERO FILEINPUTSTREAM
                if(contadorRespOKTotal<contadorRespOK)
                    contadorRespOKTotal=contadorRespOK;
 
@@ -147,8 +194,14 @@ public class ConocimientosFragment extends Fragment {
         } else {
 
             try {
+
                 obj.put("puntuacion_maxima",contadorRespOKTotal);
                 obj.put("ultima_puntuacion", contadorRespOK);
+
+                String jsonString = obj.toString();
+
+                salvarFichero("JsonPuntuacion.json",jsonString);
+
                 binding.bandera.setVisibility(View.GONE);
                 binding.radioGroup.setVisibility(View.GONE);
                 binding.botonRespuesta.setVisibility(View.GONE);
@@ -159,12 +212,8 @@ public class ConocimientosFragment extends Fragment {
         }
     }
 
-    private void almacenarPuntuacion(int puntuacionActual, int puntuacionMaxima){
 
-
-    }
-
-    private void utilizarFichero(){
+    /*private void utilizarFichero(){
 
         String fichero = "JsonPuntuacion.json", textoAlmacenar = obj.toString();
         FileOutputStream fos;
@@ -177,7 +226,7 @@ public class ConocimientosFragment extends Fragment {
         }catch (Exception e){
             e.printStackTrace();
         }
-    }
+    }*/
 
 
     class Pregunta {
