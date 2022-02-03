@@ -21,10 +21,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,13 +49,17 @@ public class ConocimientosFragment extends Fragment {
     int respuestaCorrecta;
 
 
-    int contadorRespOK = 0;
+    int contadorRespOK;
     int contadorRespOKTotal = 0;
-    JSONObject obj = new JSONObject();;
+    JSONObject obj = new JSONObject();
+    String cadena;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        contadorRespOK = 0;
+        cadena="";
+
         if(todasLasPreguntas == null) {
             try {
                 generarPreguntas("coches.xml");
@@ -65,8 +72,6 @@ public class ConocimientosFragment extends Fragment {
 
 
         if(!fileExists(getContext(), "JsonPuntuacion.json")){
-
-
 
             //  CREAMOS EL FICHERO
             try {
@@ -114,6 +119,7 @@ public class ConocimientosFragment extends Fragment {
                              Bundle savedInstanceState) {
         binding = FragmentConocimientosBinding.inflate(inflater,container,false);
 
+        leerPuntuacion();
         presentarPregunta();
 
         binding.botonRespuesta.setOnClickListener(v -> {
@@ -121,18 +127,19 @@ public class ConocimientosFragment extends Fragment {
             //CharSequence mensaje = seleccionado == respuestaCorrecta ? "¡Acertaste!" : "Fallaste";
 
             CharSequence mensaje;
-           if(seleccionado==respuestaCorrecta){
+            if(seleccionado==respuestaCorrecta){
 
-               mensaje = "¡Acertaste!";
-               contadorRespOK++;
+                mensaje = "¡Acertaste!";
+                contadorRespOK++;
 
-               // IMPLEMENTAR EL METODO LEER FICHERO FILEINPUTSTREAM
-               if(contadorRespOKTotal<contadorRespOK)
-                   contadorRespOKTotal=contadorRespOK;
+                if(contadorRespOKTotal<contadorRespOK) {
+                    contadorRespOKTotal = contadorRespOK;
+                    cadena = "¡Has batido tu récord de aciertos! Has alcanzado " + contadorRespOKTotal+" puntos";
+                }
 
-           }else{
-               mensaje = "Fallaste";
-           }
+            }else{
+                mensaje = "Fallaste";
+            }
 
             Snackbar.make(v, mensaje, Snackbar.LENGTH_INDEFINITE)
                     .setAction("Siguiente", v1 -> presentarPregunta())
@@ -160,6 +167,7 @@ public class ConocimientosFragment extends Fragment {
     }
 
     private void presentarPregunta() {
+
         if(preguntas.size() > 0) {
             binding.botonRespuesta.setEnabled(true);
 
@@ -201,33 +209,41 @@ public class ConocimientosFragment extends Fragment {
                 String jsonString = obj.toString();
 
                 salvarFichero("JsonPuntuacion.json",jsonString);
+                if(cadena.equals(""))
+                    cadena = "Has conseguido "+contadorRespOK+ " puntos";
 
                 binding.bandera.setVisibility(View.GONE);
                 binding.radioGroup.setVisibility(View.GONE);
                 binding.botonRespuesta.setVisibility(View.GONE);
-                binding.textView.setText("¡Fin! \n Acertaste: " + obj.getInt("ultima_puntuacion") + " \n Tu puntuación máxima es: " + obj.getInt("puntuacion_maxima"));
+                binding.textView.setText("¡Fin! \n" + cadena);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
     }
 
-
-    /*private void utilizarFichero(){
-
-        String fichero = "JsonPuntuacion.json", textoAlmacenar = obj.toString();
-        FileOutputStream fos;
-
+    private void leerPuntuacion(){
         try {
-            fos = openFileOutput(fichero, Context.MODE_PRIVATE);
-            fos.write(textoAlmacenar.getBytes());
-            fos.close();
+            if(fileExists(getContext(), "JsonPuntuacion.json"));{
+                FileInputStream fis = getContext().openFileInput("JsonPuntuacion.json");
+                InputStreamReader isr = new InputStreamReader(fis);
+                BufferedReader br = new BufferedReader(isr);
 
-        }catch (Exception e){
+                StringBuilder sb = new StringBuilder();
+                String fileContent = br.readLine();
+                while(fileContent!=null){
+                    sb.append(fileContent);
+                    fileContent=br.readLine();
+                }
+                fileContent = sb.toString();
+                JSONObject objJson = new JSONObject(fileContent);
+                contadorRespOKTotal = objJson.getInt("puntuacion_maxima");
+            }
+        }
+        catch(Exception e){
             e.printStackTrace();
         }
-    }*/
-
+    }
 
     class Pregunta {
         private String nombre;
